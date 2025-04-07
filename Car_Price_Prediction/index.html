@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Car Price Predictor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      max-width: 400px;
+    }
+    label, input {
+      display: block;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    button {
+      padding: 10px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    .error {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h2>🚗 Car Price Prediction</h2>
+
+  <label for="year">Year:</label>
+  <input type="number" id="year" placeholder="e.g. 2020" required>
+
+  <label for="mileage">Mileage:</label>
+  <input type="number" id="mileage" placeholder="e.g. 45000" required>
+
+  <label for="engine_size">Engine Size:</label>
+  <input type="number" id="engine_size" placeholder="e.g. 1.6" step="0.1" required>
+
+  <button onclick="predictPrice()">Predict Price</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function predictPrice() {
+      const resultEl = document.getElementById('result');
+      resultEl.textContent = '';
+      resultEl.className = '';
+
+      const year = document.getElementById('year').value;
+      const mileage = document.getElementById('mileage').value;
+      const engine_size = document.getElementById('engine_size').value;
+
+      if (!year || !mileage || !engine_size) {
+        resultEl.textContent = "❌ Please fill all fields.";
+        resultEl.className = "error";
+        return;
+      }
+
+      try {
+
+        const response = await fetch('http://127.0.0.1:5000/predict', {
+
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ year, mileage, engine_size })
+
+          });
+
+        const result = await response.json();
+
+        if (result.predicted_price !== undefined) {
+          resultEl.textContent = `💰 Predicted Price: $${result.predicted_price.toFixed(2)}`;
+          resultEl.className = "success";
+        } else {
+          resultEl.textContent = `❌ Error: ${result.error || "Unknown error"}`;
+          resultEl.className = "error";
+        }
+
+      } catch (error) {
+        resultEl.textContent = `❌ Failed to connect to server.`;
+        resultEl.className = "error";
+        console.error("Error:", error);
+      }
+    }
+  </script>
+</body>
+</html>
